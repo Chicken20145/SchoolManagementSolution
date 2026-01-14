@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/DTOs/">
+    <Project Path="SchoolManagement.DTO/SchoolManagement.DTO.csproj" />
+  </Folder>
+  <Project Path="SchoolManagement.BLL/SchoolManagement.BLL.csproj" />
+  <Project Path="SchoolManagement.DAL/SchoolManagement.DAL.csproj" />
+  <Project Path="SchoolManagement.Entities/SchoolManagement.Entities.csproj" />
+  <Project Path="SchoolManagement.UI/SchoolManagement.UI.csproj" />
+</Solution>
