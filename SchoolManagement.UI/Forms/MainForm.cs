@@ -8,6 +8,7 @@ namespace SchoolManagement.UI
     public partial class MainForm : Form
     {
         private readonly SessionService _sessionService;
+        private bool _isLoggingOut = false;
 
         public MainForm(SessionService sessionService)
         {
@@ -64,6 +65,14 @@ namespace SchoolManagement.UI
 
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
+            // If logging out, don't show confirmation dialog
+            if (_isLoggingOut)
+            {
+                _sessionService.Logout();
+                return;
+            }
+
+            // Only show confirmation when user closes form directly (X button, Alt+F4)
             var result = MessageBox.Show(
                 "Bạn có muốn thoát ứng dụng không?",
                 "Xác nhận thoát",
@@ -139,13 +148,13 @@ namespace SchoolManagement.UI
         {
             var result = MessageBox.Show(
                 "Bạn có muốn đăng xuất không?",
-                "Xác nhận đăng xuất",
+                "Xác nhận",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                _sessionService.Logout();
+                _isLoggingOut = true;
                 this.Close();
             }
         }

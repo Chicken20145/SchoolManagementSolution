@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SchoolManagement.BLL.Services;
@@ -140,13 +141,92 @@ namespace SchoolManagement.UI
             }
         }
 
-        private async void BtnAdd_Click(object sender, EventArgs e)
+        private bool ValidateTeacherInput(out string errorMessage)
         {
+            errorMessage = string.Empty;
+
             if (string.IsNullOrWhiteSpace(txtTeacherName.Text))
             {
-                MessageBox.Show("Vui lòng nhập họ và tên giáo viên.", "Thông báo",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                errorMessage = "Vui lòng nhập đầy đủ họ và tên giáo viên.";
                 txtTeacherName.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtEmail.Text))
+            {
+                errorMessage = "Vui lòng nhập email giáo viên.";
+                txtEmail.Focus();
+                return false;
+            }
+
+            if (!IsValidEmail(txtEmail.Text.Trim()))
+            {
+                errorMessage = "Email không hợp lệ. Vui lòng nhập đúng định dạng email.";
+                txtEmail.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtPhone.Text))
+            {
+                errorMessage = "Vui lòng nhập số điện thoại giáo viên.";
+                txtPhone.Focus();
+                return false;
+            }
+
+            if (!IsValidPhoneNumber(txtPhone.Text.Trim()))
+            {
+                errorMessage = "Số điện thoại không hợp lệ.\nYêu cầu: Chỉ số, độ dài 9-10 chữ số.";
+                txtPhone.Focus();
+                return false;
+            }
+
+            if (cboSubject.SelectedValue == null || (int)cboSubject.SelectedValue == 0)
+            {
+                errorMessage = "Vui lòng chọn môn học giảng dạy.";
+                cboSubject.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsValidPhoneNumber(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return false;
+
+            phone = phone.Trim();
+            
+            // Check if contains only digits
+            if (!Regex.IsMatch(phone, @"^\d+$"))
+                return false;
+
+            // Check length: 9-10 digits
+            return phone.Length >= 9 && phone.Length <= 10;
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private async void BtnAdd_Click(object sender, EventArgs e)
+        {
+            if (!ValidateTeacherInput(out string errorMessage))
+            {
+                MessageBox.Show(errorMessage, "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -159,8 +239,8 @@ namespace SchoolManagement.UI
                 var dto = new TeacherDTO
                 {
                     FullName = txtTeacherName.Text.Trim(),
-                    Email = string.IsNullOrWhiteSpace(txtEmail.Text) ? null : txtEmail.Text.Trim(),
-                    Phone = string.IsNullOrWhiteSpace(txtPhone.Text) ? null : txtPhone.Text.Trim(),
+                    Email = txtEmail.Text.Trim(),
+                    Phone = txtPhone.Text.Trim(),
                     SubjectId = subjectId
                 };
 
@@ -186,11 +266,10 @@ namespace SchoolManagement.UI
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtTeacherName.Text))
+            if (!ValidateTeacherInput(out string errorMessage))
             {
-                MessageBox.Show("Vui lòng nhập họ và tên giáo viên.", "Thông báo",
+                MessageBox.Show(errorMessage, "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTeacherName.Focus();
                 return;
             }
 
@@ -204,8 +283,8 @@ namespace SchoolManagement.UI
                 {
                     TeacherId = int.Parse(txtTeacherId.Text),
                     FullName = txtTeacherName.Text.Trim(),
-                    Email = string.IsNullOrWhiteSpace(txtEmail.Text) ? null : txtEmail.Text.Trim(),
-                    Phone = string.IsNullOrWhiteSpace(txtPhone.Text) ? null : txtPhone.Text.Trim(),
+                    Email = txtEmail.Text.Trim(),
+                    Phone = txtPhone.Text.Trim(),
                     SubjectId = subjectId
                 };
 

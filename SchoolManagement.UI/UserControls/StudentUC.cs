@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SchoolManagement.BLL.Services;
@@ -132,18 +133,75 @@ namespace SchoolManagement.UI
             await LoadStudentDataAsync();
         }
 
-        private async void BtnAdd_Click(object sender, EventArgs e)
+        private bool ValidateStudentInput(out string errorMessage)
         {
+            errorMessage = string.Empty;
+
             if (string.IsNullOrWhiteSpace(txtFullName.Text))
             {
-                MessageBox.Show("Vui lòng nhập họ và tên.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                errorMessage = "Vui lòng nhập đầy đủ họ và tên học sinh.";
                 txtFullName.Focus();
-                return;
+                return false;
             }
+
             if (cboClass.SelectedIndex < 0)
             {
-                MessageBox.Show("Vui lòng chọn lớp.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                errorMessage = "Vui lòng chọn lớp học.";
                 cboClass.Focus();
+                return false;
+            }
+
+            if (cboGender.SelectedIndex < 0)
+            {
+                errorMessage = "Vui lòng chọn giới tính.";
+                cboGender.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtPhone.Text))
+            {
+                errorMessage = "Vui lòng nhập số điện thoại.";
+                txtPhone.Focus();
+                return false;
+            }
+
+            if (!IsValidPhoneNumber(txtPhone.Text.Trim()))
+            {
+                errorMessage = "Số điện thoại không hợp lệ.\nYêu cầu: Chỉ số, độ dài 9-10 chữ số.";
+                txtPhone.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtAddress.Text))
+            {
+                errorMessage = "Vui lòng nhập địa chỉ.";
+                txtAddress.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsValidPhoneNumber(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return false;
+
+            phone = phone.Trim();
+            
+            // Check if contains only digits
+            if (!Regex.IsMatch(phone, @"^\d+$"))
+                return false;
+
+            // Check length: 9-10 digits
+            return phone.Length >= 9 && phone.Length <= 10;
+        }
+
+        private async void BtnAdd_Click(object sender, EventArgs e)
+        {
+            if (!ValidateStudentInput(out string errorMessage))
+            {
+                MessageBox.Show(errorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -178,16 +236,10 @@ namespace SchoolManagement.UI
                 MessageBox.Show("Vui lòng chọn 1 học sinh trong bảng.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            if (string.IsNullOrWhiteSpace(txtFullName.Text))
+
+            if (!ValidateStudentInput(out string errorMessage))
             {
-                MessageBox.Show("Vui lòng nhập họ và tên.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtFullName.Focus();
-                return;
-            }
-            if (cboClass.SelectedIndex < 0)
-            {
-                MessageBox.Show("Vui lòng chọn lớp.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cboClass.Focus();
+                MessageBox.Show(errorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

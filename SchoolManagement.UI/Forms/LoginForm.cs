@@ -9,12 +9,14 @@ namespace SchoolManagement.UI
     {
         private readonly AuthService _authService;
         private readonly SessionService _sessionService;
+        private bool _isExiting = false;
 
         public LoginForm()
         {
             InitializeComponent();
             _sessionService = new SessionService();
             _authService = new AuthService(new UserDAO(), _sessionService);
+            this.FormClosing += LoginForm_FormClosing;
         }
 
         private void LoginForm_Load(object sender, EventArgs e)
@@ -22,6 +24,25 @@ namespace SchoolManagement.UI
             txtUsername.Clear();
             txtPassword.Clear();
             txtUsername.Focus();
+        }
+
+        private void LoginForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            // If already confirmed exit via button, don't show dialog again
+            if (_isExiting)
+                return;
+
+            // Only show confirmation when user closes form directly (X button, Alt+F4)
+            var result = MessageBox.Show(
+                "Bạn có muốn thoát ứng dụng không?",
+                "Xác nhận thoát",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.No)
+            {
+                e.Cancel = true;
+            }
         }
 
         private async void BtnLogin_Click(object sender, EventArgs e)
@@ -96,6 +117,7 @@ namespace SchoolManagement.UI
 
             if (result == DialogResult.Yes)
             {
+                _isExiting = true;
                 Application.Exit();
             }
         }

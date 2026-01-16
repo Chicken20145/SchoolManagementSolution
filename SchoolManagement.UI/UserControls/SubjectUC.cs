@@ -109,7 +109,7 @@ namespace SchoolManagement.UI
         {
             if (string.IsNullOrWhiteSpace(txtSubjectName.Text))
             {
-                MessageBox.Show("Vui lòng nhập tên môn học.", "Thông báo",
+                MessageBox.Show("Vui lòng nhập tên môn học!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtSubjectName.Focus();
                 return;
@@ -117,7 +117,7 @@ namespace SchoolManagement.UI
 
             if (!int.TryParse(txtCredit.Text, out int credit) || credit <= 0)
             {
-                MessageBox.Show("Tín chỉ phải là số nguyên dương.", "Thông báo",
+                MessageBox.Show("Tín chỉ phải là số nguyên dương!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtCredit.Focus();
                 return;
@@ -132,14 +132,26 @@ namespace SchoolManagement.UI
                 };
 
                 await _subjectService.InsertAsync(dto);
-                MessageBox.Show("Thêm môn học thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Thêm môn học thành công!", "Thành công", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 ClearFields();
                 await LoadSubjectDataAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi thêm môn học: {ex.Message}", "Lỗi",
+                string errorMessage = "Lỗi khi thêm môn học!";
+                
+                if (ex.Message.Contains("Duplicate entry") || ex.Message.Contains("duplicate key"))
+                {
+                    errorMessage = $"Tên môn học '{txtSubjectName.Text.Trim()}' đã tồn tại.\nVui lòng nhập tên khác.";
+                }
+                else
+                {
+                    errorMessage = $"Lỗi khi thêm môn học:\n{ex.Message}";
+                }
+                
+                MessageBox.Show(errorMessage, "Lỗi", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -148,14 +160,14 @@ namespace SchoolManagement.UI
         {
             if (string.IsNullOrWhiteSpace(txtSubjectId.Text))
             {
-                MessageBox.Show("Vui lòng chọn môn học trong bảng.", "Thông báo",
+                MessageBox.Show("Vui lòng chọn môn học cần sửa trong bảng!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtSubjectName.Text))
             {
-                MessageBox.Show("Vui lòng nhập tên môn học.", "Thông báo",
+                MessageBox.Show("Vui lòng nhập tên môn học!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtSubjectName.Focus();
                 return;
@@ -163,7 +175,7 @@ namespace SchoolManagement.UI
 
             if (!int.TryParse(txtCredit.Text, out int credit) || credit <= 0)
             {
-                MessageBox.Show("Tín chỉ phải là số nguyên dương.", "Thông báo",
+                MessageBox.Show("Tín chỉ phải là số nguyên dương!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtCredit.Focus();
                 return;
@@ -179,14 +191,26 @@ namespace SchoolManagement.UI
                 };
 
                 await _subjectService.UpdateAsync(dto);
-                MessageBox.Show("Cập nhật môn học thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Cập nhật môn học thành công!", "Thành công", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 ClearFields();
                 await LoadSubjectDataAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi sửa môn học: {ex.Message}", "Lỗi",
+                string errorMessage = "Lỗi khi cập nhật môn học!";
+                
+                if (ex.Message.Contains("Duplicate entry") || ex.Message.Contains("duplicate key"))
+                {
+                    errorMessage = $"Tên môn học '{txtSubjectName.Text.Trim()}' đã tồn tại.\nVui lòng nhập tên khác.";
+                }
+                else
+                {
+                    errorMessage = $"Lỗi khi cập nhật môn học:\n{ex.Message}";
+                }
+                
+                MessageBox.Show(errorMessage, "Lỗi", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -195,26 +219,38 @@ namespace SchoolManagement.UI
         {
             if (string.IsNullOrWhiteSpace(txtSubjectId.Text))
             {
-                MessageBox.Show("Vui lòng chọn môn học trong bảng.", "Thông báo",
+                MessageBox.Show("Vui lòng chọn môn học cần xóa trong bảng!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (MessageBox.Show("Bạn có chắc muốn xóa môn học này?", "Xác nhận",
+            if (MessageBox.Show("Bạn có chắc chắn muốn xóa môn học này không?", "Xác nhận xóa",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                 return;
 
             try
             {
                 await _subjectService.DeleteAsync(int.Parse(txtSubjectId.Text));
-                MessageBox.Show("Xóa môn học thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Xóa môn học thành công!", "Thành công", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 ClearFields();
                 await LoadSubjectDataAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi xóa môn học: {ex.Message}", "Lỗi",
+                string errorMessage = "Lỗi khi xóa môn học!";
+                
+                if (ex.Message.Contains("foreign key") || ex.Message.Contains("constraint"))
+                {
+                    errorMessage = "Không thể xóa môn học này.\nMôn học đang được sử dụng bởi giáo viên hoặc lớp học.";
+                }
+                else
+                {
+                    errorMessage = $"Lỗi khi xóa môn học:\n{ex.Message}";
+                }
+                
+                MessageBox.Show(errorMessage, "Lỗi", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

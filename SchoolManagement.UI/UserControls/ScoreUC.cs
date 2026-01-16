@@ -37,6 +37,8 @@ namespace SchoolManagement.UI
 
             try
             {
+                SetButtonsEnabled(false);
+                
                 cboSemester.Items.Clear();
                 cboSemester.Items.Add("1");
                 cboSemester.Items.Add("2");
@@ -48,11 +50,22 @@ namespace SchoolManagement.UI
                 await LoadCombosAsync();
                 ConfigureGrid();
                 SetupGridEvents();
+                
+                SetButtonsEnabled(true);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi khởi tạo: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SetButtonsEnabled(false);
             }
+        }
+
+        private void SetButtonsEnabled(bool enabled)
+        {
+            btnLoad.Enabled = enabled;
+            btnSave.Enabled = enabled;
+            btnCalc.Enabled = enabled;
+            btnClear.Enabled = enabled;
         }
 
         private async Task LoadCombosAsync()
@@ -348,16 +361,21 @@ namespace SchoolManagement.UI
 
         private async void BtnLoad_Click(object sender, EventArgs e)
         {
-            await LoadGridAsync();
+            try
+            {
+                await LoadGridAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
-        // 1. Load danh sách học sinh theo bộ lọc
         private async Task LoadGridAsync()
         {
             var (classId, subjectId, semester, schoolYear) = ReadFilter();
             var data = await _scoreService.GetEntriesAsync(classId, subjectId, semester, schoolYear);
             
-            // Sắp xếp A-Z
             var sortedData = data.OrderBy(s => s.StudentName).ToList();
             _bindingList = new BindingList<ScoreEntryDTO>(sortedData);
             
